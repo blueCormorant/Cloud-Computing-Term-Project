@@ -24,11 +24,11 @@
 
 <div class="container" style="padding-bottom: 30px;"></div>
 
-{% if response %}
+{% if responses %}
 <div class="container">
-{% for r in response %}
+{% for r in responses %}
     <div class="alert alert-success" role="alert">
-        {{ r }}
+        {{ r["text"] }}
     </div>
 {% endfor %}
 </div>
@@ -42,18 +42,18 @@
 <script>
 function download() {
     var zip = new JSZip();
-    var response = {{ response|tojson }};
+    var responses = {{ responses|tojson }};
 
-    for (var i = 0; i < response.length; i++) {
-      var filename = "myfile" + i + ".txt";
-      var content = response[i];
+    for (var i = 0; i < responses.length; i++) {
+      var filename = responses[i].filename;
+      var content = responses[i].text;
       zip.file(filename, content);
     }
 
     zip.generateAsync({type:"blob"})
       .then(function(content) {
         var link = document.createElement('a');
-        link.download = "myZip.zip";
+        link.download = "MyJobs.zip";
         link.href = URL.createObjectURL(content);
         link.click();
       });

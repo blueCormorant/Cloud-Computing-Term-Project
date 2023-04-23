@@ -4,6 +4,7 @@ from transformers import T5Tokenizer, TFT5ForConditionalGeneration
 import tensorflow as tf
 import logging
 from forms import LoginForm, SignupForm
+import json
 
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
@@ -13,6 +14,13 @@ model = TFT5ForConditionalGeneration.from_pretrained('t5-small', return_dict=Tru
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = 'your_secret_key_here'
+
+
+class Response(object):
+
+    def __init__(self, text, filename):
+        self.text = text
+        self.filename = filename
 
 @app.route('/')
 def index():
@@ -24,14 +32,15 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     files = request.files.getlist("file[]")
-    response = []
+    responses = []
     for file in files:
         text = str(file.read().decode('utf-8'))
         input_ids = tokenizer("translate English to French: " + text, return_tensors="tf").input_ids
         outputs = model.generate(input_ids, max_length=512, num_beams=4, early_stopping=True)
         decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        response.append(f"{decoded}\n")
-    return render_template('index.html', response=response)
+        filename = f"translated_{file.filename}"
+        responses.append((Response(decoded, filename).__dict__))
+    return render_template('index.html', responses=responses)
 
 @app.route('/login', methods=["GET"])
 def login_get():
