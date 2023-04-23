@@ -47,17 +47,29 @@ def login_get():
     form = LoginForm()
     return render_template("login.html", title="Login", form=form)
 
+@app.route('/login', methods=['POST'])
+def login_post():
+    form = LoginForm()
+    return render_template("login.html", title="Login", form=form)
+
 @app.route('/signup', methods=['GET'])
 def signup_get():
     form = SignupForm()
     return render_template('signup.html', title='Signup', form=form)
 
+@app.route('/signup', methods=['POST'])
+def signup_post():
+    form = SignupForm()
+    return render_template('signup.html', title='Signup', form=form)
+
 @app.route("/logout")
 def logout():
+    """
     session.pop("username", None)
     session.pop("user_id", None)    
     session.pop("logged_in", None)
     flash("You have been logged out")
+    """
     return redirect(url_for("login_get"))
 
 if __name__ == '__main__':
