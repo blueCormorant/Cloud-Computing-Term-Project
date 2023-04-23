@@ -23,13 +23,44 @@
     <form action="/upload" method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="file">Select a file:</label>
-            <input type="file" class="form-control-file" id="file" name="file[]" multiple>
+            <input type="file" class="form-control-file" id="upload_files" name="file[]" multiple>
+            <div id="file_names"></div>
         </div>
         <input type="submit" class="btn btn-link bg-dark" value="Submit">
     </form>
 </div>
 
 <div class="container" style="padding-bottom: 30px;"></div>
+
+<script>
+function displayFiles() {
+    const names = document.getElementById('file_names');
+
+    for (var i = 0; i < this.files.length; i++) {
+        const filename = this.files[i].name;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            var text = event.target.result;
+            var card = document.createElement('div');
+            card.className = 'card border border-dark mb-3';
+            var cardHeader = document.createElement('div');
+            cardHeader.className = 'card-header bg-dark text-light';
+            cardHeader.innerHTML = filename;
+            card.appendChild(cardHeader);
+            var cardBody = document.createElement('div');
+            cardBody.className = 'card-body bg-light text-dark border border-dark';
+            cardBody.innerHTML = text; // Make sure to truncate text here
+            card.appendChild(cardBody);
+            names.appendChild(card);
+        };
+        reader.readAsText(this.files[i]);
+    }
+}
+
+const uploads = document.getElementById('upload_files')
+uploads.addEventListener('change', displayFiles);
+</script>
+
 
 {% if responses %}
 <div class="container">
