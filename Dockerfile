@@ -16,5 +16,8 @@ SHELL ["conda", "run", "-n", "ScienceGateway", "/bin/bash", "-c"]
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
+# Install packages from apt
+RUN apt-get update && apt-get install -y vim redis-server
+
 # Make ports available to the world outside this container
 EXPOSE 8000 6379
