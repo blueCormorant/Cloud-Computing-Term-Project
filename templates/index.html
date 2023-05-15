@@ -65,21 +65,26 @@ uploads.addEventListener('change', displayFiles);
 {% if responses %}
 <div class="container">
 {% for r in responses %}
-    <div class="alert alert-success" role="alert">
+<div class="card bg-dark text-light mb-3">
+    <div class="card-header">
+        {{ r["filename"] }}
+    </div>
+    <div class="card-body bg-light text-dark border border-dark">
         {{ r["text"] }}
     </div>
+</div>
 {% endfor %}
 </div>
 
 <div class="container">
-    <button class="btn btn-link bg-dark text-light" onclick="download()">Download</button>
+    <button class="btn btn-link bg-dark text-light" style="display: none;" onclick="download()">Download</button>
 </div>
 
 <script>
 function download() {
     var zip = new JSZip();
     var responses = {{ responses|tojson }};
-
+    
     for (var i = 0; i < responses.length; i++) {
       var filename = responses[i].filename;
       var content = responses[i].text;
