@@ -7,12 +7,22 @@ from tasks import tokenizer, model
 from tasks import Response
 import json
 import nltk
+import os
+import logging
 
 nltk.download('punkt')
 
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = 'your_secret_key_here'
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+log_file = os.path.join(os.getcwd(), 'event.log')
+file_handler = logging.FileHandler(log_file)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 
 def chunk_text(text, max_tokens=50):
@@ -62,23 +72,37 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    if request.form.get('priority') is not None:
+        priority = "high"
+    else:
+        priority = "low"
     files = request.files.getlist("file[]")
+    files = [(file.filename, file.read().decode('utf-8')) for file in files]
+    files = sorted(files, key=lambda file: len(file[1]))
     responses = []
     tasks = []
     for file in files:
-        text = str(file.read().decode('utf-8'))
-        filename = file.filename
+        filename, text = file[0], file[1]
+        logger.info(f"ARRIVE:{filename}:{priority}")
         for index, chunk in enumerate(chunk_text(text)):
             tasks.append(translate_file.subtask((filename, index, chunk)))
 
     # use a Celery group to run all tasks in parallel
-    job = group(tasks).apply_async()
-
+    if priority is None:
+        # High priority queue
+        job = group(tasks).apply_async(priority=1)
+    else:
+        # Low priority queue
+        job = group(tasks).apply_async(priority=9)
+        
     # wait for all tasks to complete
     job.join()
 
     # get the results of each task
     responses = postprocess_jobs(job.get())
+
+    for response in responses:
+        logger.info(f"RETURN:{response['filename']}:{priority}")
 
     return render_template('index.html', responses=responses)
 
@@ -107,4 +131,4 @@ def logout():
     return redirect(url_for("login_get"))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, host="0.0.0.0", port=8000)

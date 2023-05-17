@@ -18,15 +18,16 @@ app = Celery(
 
 class Response(object):
 
-    def __init__(self, text, filename):
+    def __init__(self, text, index, filename):
         self.text = text
+        self.index = index
         self.filename = filename
 
 @app.task
-def translate_file(name, text):
+def translate_file(name, index, text):
     input_ids = tokenizer("translate English to French: " + text, return_tensors="tf").input_ids
     outputs = model.generate(input_ids, max_length=512, num_beams=4, early_stopping=True)
     decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
     filename = f"translated_{name}"
-    return Response(decoded, filename).__dict__
+    return Response(decoded, index, filename).__dict__
 
