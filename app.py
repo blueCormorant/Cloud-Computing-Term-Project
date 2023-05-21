@@ -88,12 +88,14 @@ def upload_file():
             tasks.append(translate_file.subtask((filename, index, chunk)))
 
     # use a Celery group to run all tasks in parallel
-    if priority is None:
+    if priority == "high":
         # High priority queue
-        job = group(tasks).apply_async(priority=1)
+        print("high_priority")
+        job = group(tasks).apply_async(queue="high_priority")
     else:
         # Low priority queue
-        job = group(tasks).apply_async(priority=9)
+        print("low_priority")
+        job = group(tasks).apply_async(queue="low_priority")
         
     # wait for all tasks to complete
     job.join()

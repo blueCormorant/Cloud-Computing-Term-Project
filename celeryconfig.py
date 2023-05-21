@@ -6,6 +6,11 @@ broker_url = 'redis://localhost:6379/0'
 # Result backend settings
 result_backend = 'redis://localhost:6379/1'
 
+task_default_queue = 'low_priority'
+task_routes = {
+    'tasks.translate_file': {'queue': 'low_priority'},
+}
+
 # Task settings
 accept_content = ['json']
 task_serializer = 'json'
